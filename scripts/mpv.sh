@@ -24,5 +24,5 @@ LDFLAGS="$extrald" \
 	--prefix=/ --disable-manpage-build \
 	-o "`pwd`/_build$dir_suffix"
 
-./waf build -p -j6
+./waf build -p -j1 -v -v
 ./waf install --destdir="`pwd`/../../prefix$dir_suffix"

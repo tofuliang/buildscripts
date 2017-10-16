@@ -11,9 +11,10 @@ else
 	exit 255
 fi
 
-mkdir -p _build$dir_suffix
+# mkdir -p _build$dir_suffix
 cd _build$dir_suffix
 
+echo $ndk_triple;exit 0
 ../configure \
 	--host=$ndk_triple \
 	--enable-mini-gmp --disable-shared \

@@ -28,17 +28,6 @@ loadarch () {
 		export ndk_suffix=
 		export ndk_triple=arm-linux-androideabi
 		export dir_suffix=
-	elif [ "$1" == "arm64" ]; then
-		export ndk_suffix=-arm64
-		export ndk_triple=aarch64-linux-android
-		export dir_suffix=64
-	elif [ "$1" == "x86_64" ]; then
-		export ndk_suffix=-x64
-		export ndk_triple=x86_64-linux-android
-		export dir_suffix=-x64
-	else
-		echo "Invalid architecture"
-		exit 1
 	fi
 	if [ $clang -eq 1 ]; then
 		export CC=$ndk_triple-clang

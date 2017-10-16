@@ -15,11 +15,9 @@ mkdir -p _build$dir_suffix
 cd _build$dir_suffix
 
 cpu=armv7-a
-[[ "$ndk_triple" == "aarch64"* ]] && cpu=armv8-a
-[[ "$ndk_triple" == "x86_64"* ]] && cpu=generic
 
 cpuflags="-ftree-vectorize"
-[[ "$ndk_triple" == "arm"* ]] && cpuflags="$cpuflags -mfpu=neon -mcpu=cortex-a8"
+[[ "$ndk_triple" == "arm"* ]] && cpuflags="$cpuflags -mfpu=neon -mcpu=cortex-a9"
 
 prefix="`pwd`/../../../prefix$dir_suffix"
 PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" \
@@ -30,5 +28,5 @@ PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" \
 	--disable-static --enable-shared --enable-version3 \
 	--prefix="$prefix" --pkg-config=pkg-config --disable-{debug,doc}
 
-make -j6
+make -j4
 make install

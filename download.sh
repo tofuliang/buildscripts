@@ -18,11 +18,12 @@ if [ "$os" == "linux" ]; then
 	os_ndk="linux"
 elif [ "$os" == "macosx" ]; then
 	if hash brew 2>/dev/null; then
- 		brew install automake autoconf libtool coreutils
+ 		# brew install automake autoconf libtool coreutils
+ 		echo "brew install automake autoconf libtool coreutils"
  	else
  		echo "Error: brew not found. You need to install homebrew. http://brew.sh"
  		exit 255
-	fi	
+	fi
  	# get osx deps for building from brew
 	sdk_ext="zip"
 	os_ndk="darwin"
@@ -35,30 +36,25 @@ if [ "$os" == "linux" ]; then
 	wget "http://dl.google.com/android/android-sdk_${v_sdk}-${os}.${sdk_ext}" -O - | \
 		tar -xz -f -
 elif [ "$os" == "macosx" ]; then
-	wget "http://dl.google.com/android/android-sdk_${v_sdk}-${os}.${sdk_ext}"
-	unzip "android-sdk_${v_sdk}-${os}.${sdk_ext}"
-	rm "android-sdk_${v_sdk}-${os}.${sdk_ext}"
+	# wget "http://dl.google.com/android/android-sdk_${v_sdk}-${os}.${sdk_ext}"
+	# unzip "android-sdk_${v_sdk}-${os}.${sdk_ext}"
+	# rm "android-sdk_${v_sdk}-${os}.${sdk_ext}"
+	echo "install ndk"
 fi
-"./android-sdk-${os}/tools/android" update sdk --no-ui --all --filter build-tools-23.0.3,android-23,extra-android-m2repository
+# "./android-sdk-${os}/tools/android" update sdk --no-ui --all --filter build-tools-23.0.3,android-23,extra-android-m2repository
 
 # android-ndk-$v_ndk
-wget "http://dl.google.com/android/repository/android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
-unzip "android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
-rm "android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
+# wget "http://dl.google.com/android/repository/android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
+# unzip "android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
+# rm "android-ndk-${v_ndk}-${os_ndk}-x86_64.zip"
 
 # ndk-toolchain
 cd "android-ndk-${v_ndk}"
-toolchain_api=21
+toolchain_api=18
 ./build/tools/make_standalone_toolchain.py \
 	--arch arm --api $toolchain_api \
-	--install-dir `pwd`/../ndk-toolchain
-./build/tools/make_standalone_toolchain.py \
-	--arch arm64 --api $toolchain_api \
-	--install-dir `pwd`/../ndk-toolchain-arm64
-./build/tools/make_standalone_toolchain.py \
-	--arch x86_64 --api $toolchain_api \
-	--install-dir `pwd`/../ndk-toolchain-x64
-for tc in ndk-toolchain{,-arm64,-x64}; do
+	--install-dir `pwd`/../ndk-toolchain --force
+for tc in ndk-toolchain{,}; do
 	pushd ../$tc
 
 	rm -rf bin/py* lib/{lib,}py* # remove python because it can cause breakage
@@ -80,47 +76,53 @@ cd ..
 
 mkdir -p deps && cd deps
 
-# nettle
-mkdir nettle
-cd nettle
-wget https://ftp.gnu.org/gnu/nettle/nettle-$v_nettle.tar.gz -O - | \
-	tar -xz -f - --strip-components=1
-cd ..
+# # nettle
+# mkdir nettle
+# cd nettle
+# wget https://ftp.gnu.org/gnu/nettle/nettle-$v_nettle.tar.gz -O - | \
+# 	tar -xz -f - --strip-components=1
+# cd ..
 
-# gnutls
-mkdir gnutls
-cd gnutls
-wget ftp://ftp.gnutls.org/gcrypt/gnutls/v${v_gnutls%.*}/gnutls-$v_gnutls.tar.xz -O - | \
-	tar -xJ -f - --strip-components=1
-cd ..
+# # gnutls
+# mkdir gnutls
+# cd gnutls
+# wget ftp://ftp.gnutls.org/gcrypt/gnutls/v${v_gnutls%.*}/gnutls-$v_gnutls.tar.xz -O - | \
+# 	tar -xJ -f - --strip-components=1
+# cd ..
+gsed 's/#define _FILE_OFFSET_BITS 64/#define _FILE_OFFSET_BITS 32/g' -i gnutls/configure
+gsed 's/_AC_SYS_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS, 64,/_AC_SYS_LARGEFILE_MACRO_VALUE(_FILE_OFFSET_BITS, 32,/g' -i gnutls/gl/m4/largefile.m4
+gsed 's/_FILE_OFFSET_BITS=64/_FILE_OFFSET_BITS=32/g' -i gnutls/gl/m4/largefile.m4
 
-# ffmpeg
-git clone https://github.com/FFmpeg/FFmpeg ffmpeg
+# # ffmpeg
+# git clone https://github.com/FFmpeg/FFmpeg ffmpeg
+gsed 's/_FILE_OFFSET_BITS=64/_FILE_OFFSET_BITS=32/g' -i ffmpeg/configure
 
-# freetype2
-git clone git://git.sv.nongnu.org/freetype/freetype2.git
+# # freetype2
+# git clone git://git.sv.nongnu.org/freetype/freetype2.git
 
-# fribidi
-mkdir fribidi
-cd fribidi
-wget http://fribidi.org/download/fribidi-$v_fribidi.tar.bz2 -O - | \
-	tar -xj -f - --strip-components=1
-cd ..
+# # fribidi
+# mkdir fribidi
+# cd fribidi
+# wget http://fribidi.org/download/fribidi-$v_fribidi.tar.bz2 -O - | \
+# 	tar -xj -f - --strip-components=1
+# cd ..
 
-# libass
-git clone https://github.com/libass/libass
+# # libass
+# git clone https://github.com/libass/libass
 
-# lua
-mkdir lua
-cd lua
-wget http://www.lua.org/ftp/lua-$v_lua.tar.gz -O - | \
-	tar -xz -f - --strip-components=1
-cd ..
+# # lua
+# mkdir lua
+# cd lua
+# wget http://www.lua.org/ftp/lua-$v_lua.tar.gz -O - | \
+# 	tar -xz -f - --strip-components=1
+# cd ..
+gsed "s/#define _FILE_OFFSET_BITS\t64/#define _FILE_OFFSET_BITS\t32/g" -i lua/src/liolib.c
 
 # mpv
-git clone https://github.com/mpv-player/mpv
+# git clone https://github.com/mpv-player/mpv
+gsed 's/-D_FILE_OFFSET_BITS=64/-D_FILE_OFFSET_BITS=32/g' -i mpv/waftools/detections/compiler.py
 
-cd ..
+# cd ..
 
-# mpv-android
-git clone https://github.com/mpv-android/mpv-android
+# # mpv-android
+# git clone https://github.com/mpv-android/mpv-android

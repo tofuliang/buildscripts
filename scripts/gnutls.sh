@@ -29,5 +29,5 @@ PKG_CONFIG_LIBDIR="`pwd`/../../../prefix$dir_suffix/lib/pkgconfig" \
 make -j6
 make install
 # fix linking (pkg-config seems to ignore Requires.private)
-sed '/^Libs:/ s|$| -lnettle -lhogweed|' -i \
+gsed '/^Libs:/ s|$| -lnettle -lhogweed|' -i \
 	../../../prefix$dir_suffix/lib/pkgconfig/gnutls.pc
