@@ -5,7 +5,7 @@
 if [ "$1" == "build" ]; then
 	true
 elif [ "$1" == "clean" ]; then
-	make clean
+	make clean && [ -f make.finished ] && rm make.finished
 	exit 0
 else
 	exit 255
@@ -16,11 +16,12 @@ $0 clean
 
 # LUA_T= and LUAC_T= disable building lua & luac
 # -Dgetlocaledecpoint()=('.') fixes bionic missing decimal_point in localeconv
-make CC="$CC -Dgetlocaledecpoint\(\)=\(\'.\'\)" \
-	AR="$ndk_triple-ar r" \
-	RANLIB="$ndk_triple-ranlib" \
-	PLAT=linux LUA_T= LUAC_T= -j6
-
+if [ ! -f make.finished ];then
+	make CC="$CC -Dgetlocaledecpoint\(\)=\(\'.\'\)" \
+		AR="$ndk_triple-ar r" \
+		RANLIB="$ndk_triple-ranlib" \
+		PLAT=linux LUA_T= LUAC_T= -j$jobs && touch make.finished
+fi
 INSTALL=install
 [ "$os" == "macosx" ] && INSTALL=ginstall
 

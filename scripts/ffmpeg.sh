@@ -5,7 +5,7 @@
 if [ "$1" == "build" ]; then
 	true
 elif [ "$1" == "clean" ]; then
-	rm -rf _build$dir_suffix
+	rm -rf _build$dir_suffix && [ -f make.finished ] && rm make.finished
 	exit 0
 else
 	exit 255
@@ -22,13 +22,15 @@ cpuflags="-ftree-vectorize"
 [[ "$ndk_triple" == "arm"* ]] && cpuflags="$cpuflags -mfpu=neon -mcpu=cortex-a8"
 
 prefix="`pwd`/../../../prefix$dir_suffix"
-PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" \
-../configure \
-	--target-os=android --enable-cross-compile --cross-prefix=$ndk_triple- --cc=$CC \
-	--arch=${ndk_triple%%-*} --cpu=$cpu --enable-{jni,mediacodec,gmp,gnutls} \
-	--extra-cflags="-I$prefix/include $cpuflags" --extra-ldflags="-L$prefix/lib" \
-	--disable-static --enable-shared --enable-version3 \
-	--prefix="$prefix" --pkg-config=pkg-config --disable-{debug,doc}
+if [ ! -f make.finished ];then
+	PKG_CONFIG_LIBDIR="$prefix/lib/pkgconfig" \
+	../configure \
+		--target-os=android --enable-cross-compile --cross-prefix=$ndk_triple- --cc=$CC \
+		--arch=${ndk_triple%%-*} --cpu=$cpu --enable-{jni,mediacodec,gmp,gnutls} \
+		--extra-cflags="-I$prefix/include $cpuflags" --extra-ldflags="-L$prefix/lib" \
+		--disable-static --enable-shared --enable-version3 \
+		--prefix="$prefix" --pkg-config=pkg-config --disable-{debug,doc}
 
-make -j6
+	make -j$jobs && touch make.finished
+fi
 make install

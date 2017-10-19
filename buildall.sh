@@ -5,7 +5,7 @@ nodeps=0
 clang=0
 target=mpv-android
 arch=armv7l
-
+jobs=6
 # i would've used a dict but putting arrays in a dict is not a thing
 
 dep_nettle=()
@@ -68,7 +68,7 @@ build () {
 		BUILDSCRIPT=../../scripts/$1.sh
 	fi
 	[ $cleanbuild -eq 1 ] && $BUILDSCRIPT clean
-	$BUILDSCRIPT build
+	[ $cleanbuild -eq 0 ] && $BUILDSCRIPT build
 	popd
 }
 
@@ -86,6 +86,7 @@ while [ $# -gt 0 ]; do
 	case "$1" in
 		--clean)
 		cleanbuild=1
+		rm -fr prefix*
 		;;
 		--no-deps)
 		nodeps=1
@@ -110,6 +111,6 @@ done
 loadarch $arch
 build $target
 
-[ "$target" == "mpv-android" ] && ls -lh ./mpv-android/app/build/outputs/apk/app-debug.apk
+[ $cleanbuild -eq 0 ] && [ "$target" == "mpv-android" ] && ls -lh ./mpv-android/app/build/outputs/apk/app-debug.apk
 
 exit 0
